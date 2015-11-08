@@ -14,6 +14,9 @@ class Dialogue:
         self.isvalid = True
         self.filename = filename
 
+        self.clean_string = True
+        self.enable_tags = False
+
         self.utterlist = []
         self.userlist = []
         self.timelist = []
@@ -23,12 +26,13 @@ class Dialogue:
 
         self.p_utterlist = []
 
+    def initialize(self):
         self._extractRawList()
         if self.isvalid:
             self._concatUtter()
             self._checkValid()
         if self.isvalid:
-            self._preprocess()
+            self._preprocess(self.clean_string, self.enable_tags)
 
     def _extractRawList(self):
         """
@@ -76,9 +80,9 @@ class Dialogue:
                 return False
         return True
 
-    def _preprocess(self):
+    def _preprocess(self, clean_string = True, enable_tags = False):
         for line in self.c_utterlist:
-            self.p_utterlist.append(TextPreprocess.process_line(line))
+            self.p_utterlist.append(TextPreprocess.process_line(line, clean_string, enable_tags))
 
     def print_utters(self):
         return (self.AsW % self.EOS).join( [' '.join(u) for u in self.p_utterlist] ) + self.AsW % self.EOS

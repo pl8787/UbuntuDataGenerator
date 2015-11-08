@@ -59,15 +59,13 @@ def clean_str(string, TREC=False):
     string = re.sub(r",", " , ", string) 
     return string.strip() 
 
-def process_token(c, word):
+def process_token(word, skip_word=set(['__eou__','__eos__'])):
     """
     Use NLTK to replace named entities with generic tags.
     Also replace URLs, numbers, and paths.
     """
-    #nodelist = ['PERSON', 'ORGANIZATION', 'GPE', 'LOCATION', 'FACILITY', 'GSP']
-    #if hasattr(c, 'label'):
-    #    if c.label() in nodelist:
-    #                return "__%s__" % c.label()
+    if word in skip_word:
+        return word
     if is_url(word):
         return "__url__"
     elif is_number(word):
@@ -76,17 +74,38 @@ def process_token(c, word):
         return "__path__"
     return word
 
-def process_line(s, clean_string=True):
+def process_chunk(chunk, skip_word=set(['__eou__','__eos__'])):
+    """
+    Use NLTK to replace named entities with generic tags.
+    Also replace URLs, numbers, and paths.
+    """
+    nodelist = ['PERSON', 'ORGANIZATION', 'GPE', 'LOCATION', 'FACILITY', 'GSP']
+    if hasattr(chunk, 'label'):
+        if chunk.label() in nodelist:
+            return ["__%s__" % chunk.label()]
+
+    if hasattr(chunk, 'flatten'):
+        words = []
+        for word, tag in chunk.flatten():
+            words.append(process_token(word))
+        return words
+    else:
+        return [process_token(chunk[0])]
+
+def process_line(s, clean_string=True, enable_tags = False):
     """
     Processes a line by iteratively calling process_token.
     """
     if clean_string:
             s = clean_str(s)
     tokens = tokenize(s)
-    #sent = nltk.pos_tag(tokens)
-    #chunks = nltk.ne_chunk(sent, binary=False)
-    #return [process_token(c,token).lower().encode('UTF-8') for c,token in map(None, chunks, tokens)]
-    return [process_token(None,token).lower().encode('UTF-8') for token in tokens]
-
-
+    if enable_tags:
+        sent = nltk.pos_tag(tokens)
+        chunks = nltk.ne_chunk(sent, binary=False)
+        words = []
+        for chunk in chunks:
+            words += process_chunk(chunk)
+        return [w.lower().encode('UTF-8') for w in words]
+    else:
+        return [process_token(token).lower().encode('UTF-8') for token in tokens]
 
