@@ -68,10 +68,10 @@ def process_token(word, skip_word=set(['__eou__','__eos__'])):
         return word
     if is_url(word):
         return "__url__"
-    elif is_number(word):
-        return "__number__"
     elif os.path.isabs(word):
         return "__path__"
+    elif is_number(word):
+        return "__number__"
     return word
 
 def process_chunk(chunk, skip_word=set(['__eou__','__eos__'])):

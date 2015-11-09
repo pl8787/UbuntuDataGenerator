@@ -4,7 +4,7 @@
 import TextPreprocess
 
 class Dialogue:
-    def __init__(self, filename):
+    def __init__(self, filename, utterlist = None, userlist = None):
         """
         Initialize one dialogue object.
         """
@@ -13,6 +13,7 @@ class Dialogue:
         self.AsW = ' %s '
         self.isvalid = True
         self.filename = filename
+        self.key = ','.join( [filename.split('/')[-1], filename.split('/')[-2]] )
 
         self.clean_string = True
         self.enable_tags = False
@@ -25,6 +26,18 @@ class Dialogue:
         self.c_userlist = []
 
         self.p_utterlist = []
+
+        if utterlist:
+            self.utterlist = utterlist.split('__eos__')[:-1]
+        if userlist:
+            self.userlist = userlist.split()
+        if len(self.utterlist) != len(self.userlist):
+            print filename
+            print len(self.utterlist)
+            print len(self.userlist)
+            print self.utterlist
+            print self.userlist
+            exit()
 
     def initialize(self):
         self._extractRawList()
@@ -47,7 +60,7 @@ class Dialogue:
             if len(line[3].strip())==0:
                 continue
             self.utterlist.append(' '.join(line[3:]))
-            self.userlist.append(line[1])
+            self.userlist.append(line[1].replace(' ','`'))
             
     def _concatUtter(self):
         """
