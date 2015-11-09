@@ -6,6 +6,7 @@ from glob import glob
 import sys
 import os
 import random
+import multiprocessing
 
 def process_dir(src_dir, dest_file):
     print src_dir, '->', dest_file
@@ -33,10 +34,13 @@ def process_dataset(src_root, dest_dir):
     src_dirs = glob('%s/*' % src_root)
     if not os.path.isdir(dest_dir):
         os.mkdir(dest_dir)
+    pool = multiprocessing.Pool(processes=10) 
     for sub_src_dir in src_dirs:
         print sub_src_dir
         sub_dir = sub_src_dir.split('/')[-1]
-        process_dir(sub_src_dir, dest_dir + sub_dir + '.txt')
+        pool.apply_async(process_dir, (sub_src_dir, dest_dir + sub_dir + '.txt', ) )
+    pool.close()
+    pool.join()
 
 def read_format_data(src_root):
     src_files = glob('%s/*' % src_root)
