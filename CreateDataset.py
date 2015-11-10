@@ -122,19 +122,22 @@ def sample_negative(diag_list, diag_dict, negative_count):
                 neg_diag_rnd = random.choice(diag_dict_keys)
             neg_line_rnd = random.choice(range(len( diag_list[diag_dict[neg_diag_rnd]].utterlist )))
             neg_list.append( (neg_diag_rnd, neg_line_rnd) )
+            neg_diag_rnd = None
+            neg_line_rnd = None
         negative_response[key] = neg_list
     print 'Negative response size:', len(negative_response)
     return negative_response
 
 def generate_instance(diag_list, negative_response, max_pos_per_diag, neg_per_pos):
     min_window = 2
+    max_window = 10
     instances = []
     for diag in diag_list:
         n = len(diag.utterlist)
         max_ins = (n-2)*(n-1)/2
         for idx in range(min(max_ins, max_pos_per_diag)):
             ins = [[],[]]
-            winsize_rnd = random.choice(range(min_window, n))
+            winsize_rnd = random.choice(range(min_window, min(n, max_window)))
             pos_rnd = random.choice(range(n-winsize_rnd))
             ins[0] = (diag.key, winsize_rnd, pos_rnd)
             ins[1] = negative_response[diag.key][idx * neg_per_pos : (idx+1) * neg_per_pos]
@@ -197,11 +200,11 @@ def generate_word_dict(diag_list):
                     word_frq[w] += 1
 
     print 'Word count:', len(word_dict)
-    out_ = open('word.dict', 'w')
+    out_ = open('%s/word.dict' % dir_tag, 'w')
     for w in word_dict:
         print >>out_, w, word_dict[w]
     out_.close()
-    out_ = open('word.frq', 'w')
+    out_ = open('%s/word.frq' % dir_tag, 'w')
     for w in word_dict:
         print >>out_, w, word_frq[w]
     out_.close()
@@ -209,12 +212,12 @@ def generate_word_dict(diag_list):
 
 
 if __name__ == "__main__":
-    dir_tag = 'x.3.3.9'
+    dir_tag = 'z.3.3.9.10'
     os.mkdir(dir_tag)
     # Step 1
     src_root = '/home/pangliang/matching/data/ubuntu/dialogs/'
     dest_dir = '/home/pangliang/matching/data/ubuntu/dialogs_processed/'
-    process_dataset(src_root, dest_dir)
+    # process_dataset(src_root, dest_dir)
     # Step 2: Split dataset 2 train valid test
     processed_src_root = dest_dir
     diag_list = read_format_data(processed_src_root)
